@@ -5,34 +5,41 @@ import HomeScreen from '../screens/HomeScreen';
 import Welcome from '../screens/Welcome';
 import SignUp from '../screens/SignUp';
 import SignIn from '../screens/SignIn';
+import {useSelector} from 'react-redux';
 const Stack = createNativeStackNavigator();
 const AppNavigator = () => {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Welcome">
-        <Stack.Screen
-          name="Home"
-          options={{headerShown: false}}
-          component={HomeScreen}
-        />
-        <Stack.Screen
-          name="Welcome"
-          options={{headerShown: false}}
-          component={Welcome}
-        />
-        <Stack.Screen
-          options={{headerShown: false}}
-          name="Signup"
-          component={SignUp}
-        />
-        <Stack.Screen
-          name="Signin"
-          options={{headerShown: false}}
-          component={SignIn}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+  const user = useSelector(state => state.user);
+  if (user.isAutheticated) {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Home">
+          <Stack.Screen name="Home" component={HomeScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  } else {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Welcome">
+          <Stack.Screen
+            name="Welcome"
+            options={{headerShown: false}}
+            component={Welcome}
+          />
+          <Stack.Screen
+            options={{headerShown: false}}
+            name="Signup"
+            component={SignUp}
+          />
+          <Stack.Screen
+            name="Signin"
+            options={{headerShown: false}}
+            component={SignIn}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  }
 };
 
 export default AppNavigator;

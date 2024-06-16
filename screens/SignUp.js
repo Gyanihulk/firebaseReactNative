@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   View,
@@ -14,10 +14,40 @@ import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import colors from '../theme/colors';
+import {useDispatch} from 'react-redux';
+import {registerUser} from '../redux/slices/user';
+import Toast from 'react-native-toast-message';
+import onGoogleButtonPress from '../lib/google';
 const {width: screenWidth} = Dimensions.get('window');
 const SignUp = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const dispatch = useDispatch();
   const navigation = useNavigation();
+  const handleSubmit = () => {
+    try {
+      if (name !== '' && email !== '' && password !== '') {
+        const userData = {
+          name,
+        };
 
+        // Dispatch the registerUser action with the email, password, and userData
+        dispatch(registerUser({email, password, userData}));
+      } else {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'All fields are required.',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    // Create a userData object with additional information if needed
+  };
+  
   return (
     <SafeAreaView
       className="flex-1 bg-white"
@@ -47,20 +77,31 @@ const SignUp = () => {
             <TextInput
               className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3"
               placeholder="Enter Name"
+              value={name}
+              onChangeText={setName}
+              placeholderTextColor="#4B5563"
             />
             <Text className="text-gray-700 ml-4">Email Address</Text>
             <TextInput
               className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3"
               placeholder="Enter Email"
+              value={email}
+              placeholderTextColor="#4B5563"
+              onChangeText={setEmail}
             />
             <Text className="text-gray-700 ml-4">Password</Text>
             <TextInput
               className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-5"
               secureTextEntry={true}
               placeholder="Enter Password"
+              placeholderTextColor="#4B5563"
+              value={password}
+              onChangeText={setPassword}
             />
 
-            <TouchableOpacity className="py-3 bg-yellow-400 rounded-xl">
+            <TouchableOpacity
+              className="py-3 bg-yellow-400 rounded-xl"
+              onPress={handleSubmit}>
               <Text className="font-xl font-bold text-center text-gray-700">
                 Register
               </Text>
@@ -70,7 +111,7 @@ const SignUp = () => {
             Or
           </Text>
           <View className="flex-row justify-center space-x-12 ">
-            <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl">
+            <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl" onPress={() => onGoogleButtonPress().then(() => console.log('Signed in with Google!'))}>
               <FontAwesome name="google" size={24} color="black" />
             </TouchableOpacity>
             <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl">
