@@ -47,7 +47,7 @@ const SignUp = () => {
 
     // Create a userData object with additional information if needed
   };
-  
+
   return (
     <SafeAreaView
       className="flex-1 bg-white"
@@ -111,7 +111,20 @@ const SignUp = () => {
             Or
           </Text>
           <View className="flex-row justify-center space-x-12 ">
-            <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl" onPress={() => onGoogleButtonPress().then(() => console.log('Signed in with Google!'))}>
+            <TouchableOpacity
+              className="p-2 bg-gray-100 rounded-2xl"
+              onPress={() =>
+                onGoogleButtonPress()
+                  .then(user => {
+                    console.log('Signed in with Google!', user);
+                    // Navigate to the onboarding screen after successful sign-in
+                    navigation.navigate('UserOnboarding');
+                  })
+                  .catch(error => {
+                    console.error('Error signing in with Google:', error);
+                    // Handle sign-in error (e.g., show an error message)
+                  })
+              }>
               <FontAwesome name="google" size={24} color="black" />
             </TouchableOpacity>
             <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl">

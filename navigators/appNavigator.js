@@ -6,6 +6,7 @@ import Welcome from '../screens/Welcome';
 import SignUp from '../screens/SignUp';
 import SignIn from '../screens/SignIn';
 import {useSelector} from 'react-redux';
+import UserOnboarding from '../screens/UserOnboarding';
 const Stack = createNativeStackNavigator();
 const AppNavigator = () => {
   const user = useSelector(state => state.user);
@@ -35,6 +36,11 @@ const AppNavigator = () => {
             name="Signin"
             options={{headerShown: false}}
             component={SignIn}
+          />
+          <Stack.Screen
+            name="UserOnboarding"
+            options={{headerShown: false}}
+            component={UserOnboarding}
           />
         </Stack.Navigator>
       </NavigationContainer>
