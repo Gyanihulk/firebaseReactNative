@@ -14,10 +14,13 @@ import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import colors from '../theme/colors';
+import onGoogleButtonPress from '../lib/google';
+import { setIsAuthenticated } from '../redux/slices/user';
+import { useDispatch } from 'react-redux';
 const {width: screenWidth} = Dimensions.get('window');
 const SignIn = () => {
   const navigation = useNavigation();
-
+  const dispatch = useDispatch();
   return (
     <SafeAreaView
       className="flex-1 bg-white"
@@ -67,7 +70,22 @@ const SignIn = () => {
             Or
           </Text>
           <View className="flex-row justify-center space-x-12 ">
-            <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl">
+            <TouchableOpacity
+              className="p-2 bg-gray-100 rounded-2xl"
+              onPress={() =>
+                onGoogleButtonPress()
+                  .then(user => {
+                    console.log('Signed in with Google!', user);
+                    // Navigate to the onboarding screen after successful sign-in
+                    dispatch(setIsAuthenticated(true));
+                    navigation.navigate('Home');
+
+                  })
+                  .catch(error => {
+                    console.error('Error signing in with Google:', error);
+                    // Handle sign-in error (e.g., show an error message)
+                  })
+              }>
               <FontAwesome name="google" size={24} color="black" />
             </TouchableOpacity>
             <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl">

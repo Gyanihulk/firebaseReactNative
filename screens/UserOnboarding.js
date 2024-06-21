@@ -17,8 +17,11 @@ import colors from '../theme/colors';
 import {Picker} from '@react-native-picker/picker';
 import {useDispatch} from 'react-redux';
 import {saveProfileDetails} from '../redux/slices/profileDetails';
+import {launchImageLibrary} from 'react-native-image-picker';
+
 const {width: screenWidth} = Dimensions.get('window');
 import {Tab, TabView} from '@rneui/themed';
+import {setIsAuthenticated, updateProfileImage} from '../redux/slices/user';
 const UserOnboarding = () => {
   const [subjectsOfInterest, setSubjectsOfInterest] = useState('');
   const [currentEducationLevel, setCurrentEducationLevel] = useState('');
@@ -34,6 +37,7 @@ const UserOnboarding = () => {
   const [classPreferences, setClassPreferences] = useState([]);
   const [isSubjectModalVisible, setIsSubjectModalVisible] = useState(false);
   const [isClassModalVisible, setIsClassModalVisible] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
   const navigation = useNavigation();
   const dispatch = useDispatch();
   // Function to handle form submission
@@ -71,6 +75,29 @@ const UserOnboarding = () => {
 
     // Dispatch the saveProfileDetails action with the profile data
     dispatch(saveProfileDetails(profileData));
+    dispatch(setIsAuthenticated(true));
+  };
+  const handleSelectImage = () => {
+    const options = {
+      mediaType: 'photo',
+      quality: 1,
+    };
+
+    launchImageLibrary(options, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else {
+        const source = {uri: response.assets[0].uri};
+        console.log(source.uri);
+        setProfileImage(source.uri);
+
+        // Dispatch the action to update the profile image
+        dispatch(updateProfileImage({imageUri: source.uri}));
+        
+      }
+    });
   };
   const educationLevels = [
     {label: '1st - 5th Standard', value: '1-5'},
@@ -196,7 +223,6 @@ const UserOnboarding = () => {
       <ScrollView
         contentContainerStyle={{flexGrow: 1}}
         keyboardShouldPersistTaps="handled">
-            
         <View className=" bg-white">
           <Tab
             value={index}
@@ -226,6 +252,24 @@ const UserOnboarding = () => {
                 contentContainerStyle={{flexGrow: 1}}
                 keyboardShouldPersistTaps="handled">
                 <View className="form space-y-2 pb-6 pt-3">
+                  <View className="flex items-center justify-center mt-4">
+                    <TouchableOpacity
+                      className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center"
+                      onPress={handleSelectImage} // Function to handle image selection
+                    >
+                      {profileImage ? (
+                        <Image
+                          source={{uri: profileImage}}
+                          className="w-full h-full rounded-full"
+                        />
+                      ) : (
+                        <Text className="text-gray-700 text-xl">+</Text>
+                      )}
+                    </TouchableOpacity>
+                    <Text className="text-gray-700 mt-2">
+                      Tap to Change Profile Picture
+                    </Text>
+                  </View>
                   <Text className="text-gray-700 ml-4">
                     Teaching Experience
                   </Text>
@@ -330,7 +374,25 @@ const UserOnboarding = () => {
               <ScrollView
                 contentContainerStyle={{flexGrow: 1}}
                 keyboardShouldPersistTaps="handled">
-                <View className="form space-y-2 pb-6">
+                <View className="form space-y-2 pb-6 pt-3">
+                  <View className="flex items-center justify-center mt-4">
+                    <TouchableOpacity
+                      className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center"
+                      onPress={handleSelectImage} // Function to handle image selection
+                    >
+                      {profileImage ? (
+                        <Image
+                          source={{uri: profileImage}}
+                          className="w-full h-full rounded-full"
+                        />
+                      ) : (
+                        <Text className="text-gray-700 text-xl">+</Text>
+                      )}
+                    </TouchableOpacity>
+                    <Text className="text-gray-700 mt-2">
+                      Tap to Change Profile Picture
+                    </Text>
+                  </View>
                   <Text className="text-gray-700 ml-4 pt-3 ">
                     Current Education Level
                   </Text>

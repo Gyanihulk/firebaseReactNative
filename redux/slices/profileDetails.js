@@ -29,11 +29,36 @@ export const saveProfileDetails = createAsyncThunk(
     }
   },
 );
+export const fetchProfileImage = createAsyncThunk(
+  'profileDetails/fetchProfileImage',
+  async (_, {rejectWithValue}) => {
+    try {
+      const userId = auth().currentUser.uid;
 
+      // Get a reference to the user's document in the profiledetails collection
+      const profileRef = firestore().collection('profiledetails').doc(userId);
+
+      // Get the profile data from Firestore
+      const profileSnapshot = await profileRef.get();
+
+      // Check if the profile data exists and has a photoURL field
+      if (profileSnapshot.exists && profileSnapshot.data().photoURL) {
+        // Return the photoURL
+        return profileSnapshot.data().photoURL;
+      } else {
+        // Throw an error if no photoURL is found
+        throw new Error('No profile image found.');
+      }
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  },
+);
 const profileDetailsSlice = createSlice({
   name: 'profileDetails',
   initialState: {
     data: null,
+    profileImage: null,
     status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,
   },
@@ -50,6 +75,18 @@ const profileDetailsSlice = createSlice({
         state.data = action.payload;
       })
       .addCase(saveProfileDetails.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      });
+      builder
+      .addCase(fetchProfileImage.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchProfileImage.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.profileImage = action.payload; // Store the profile image URL
+      })
+      .addCase(fetchProfileImage.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       });
