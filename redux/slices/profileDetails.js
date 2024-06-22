@@ -29,7 +29,7 @@ export const saveProfileDetails = createAsyncThunk(
     }
   },
 );
-export const fetchProfileImage = createAsyncThunk(
+export const fetchProfileDetails = createAsyncThunk(
   'profileDetails/fetchProfileImage',
   async (_, {rejectWithValue}) => {
     try {
@@ -40,11 +40,12 @@ export const fetchProfileImage = createAsyncThunk(
 
       // Get the profile data from Firestore
       const profileSnapshot = await profileRef.get();
-
+     
       // Check if the profile data exists and has a photoURL field
-      if (profileSnapshot.exists && profileSnapshot.data().photoURL) {
+      if (profileSnapshot.exists) {
         // Return the photoURL
-        return profileSnapshot.data().photoURL;
+        console.log(profileSnapshot.data())
+        return profileSnapshot.data();
       } else {
         // Throw an error if no photoURL is found
         throw new Error('No profile image found.');
@@ -65,9 +66,9 @@ const profileDetailsSlice = createSlice({
   reducers: {
     // Optional: add reducers for other actions here
   },
-  extraReducers: builder => {
+  extraReducers: (builder) => {
     builder
-      .addCase(saveProfileDetails.pending, state => {
+      .addCase(saveProfileDetails.pending, (state) => {
         state.status = 'loading';
       })
       .addCase(saveProfileDetails.fulfilled, (state, action) => {
@@ -77,16 +78,15 @@ const profileDetailsSlice = createSlice({
       .addCase(saveProfileDetails.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
-      });
-      builder
-      .addCase(fetchProfileImage.pending, (state) => {
+      })
+      .addCase(fetchProfileDetails.pending, (state) => {
         state.status = 'loading';
       })
-      .addCase(fetchProfileImage.fulfilled, (state, action) => {
+      .addCase(fetchProfileDetails.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.profileImage = action.payload; // Store the profile image URL
+        state.data = action.payload; // Store the profile details
       })
-      .addCase(fetchProfileImage.rejected, (state, action) => {
+      .addCase(fetchProfileDetails.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       });

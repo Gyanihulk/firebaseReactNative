@@ -1,43 +1,44 @@
-import React, { useState } from 'react';
-import {
-  SafeAreaView,
-  View,
-  ScrollView,
-  Text,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-// Replace with actual path to your icon
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import colors from '../theme/colors';
+import {ScrollView} from 'react-native';
+import React, {useRef} from 'react';
 import Header from '../components/Header';
-const {width: screenWidth} = Dimensions.get('window');
+import SubHeader from '../components/SubHeader';
+import Category from '../components/Category';
+import Services from '../components/Services';
+import Deals from '../components/Deals';
+import Brands from '../components/Brands';
+import BottomSheet from '@gorhom/bottom-sheet';
+import {View, Text, Button} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 const HomeScreen = () => {
-  const navigation = useNavigation();
-  const [searchValue, setSearchValue] = useState('');
-  const userLocation = 'New York, NY'; // Replace with actual user location data
+  const bottomSheetRef = useRef(null);
 
-  const handleSearch = () => {
-    // Implement your search logic here
-    console.log('Search for:', searchValue);
+  const handleOpenBottomSheet = () => {
+    bottomSheetRef.current?.expand();
   };
 
+  const handleCloseBottomSheet = () => {
+    bottomSheetRef.current?.close();
+  };
   return (
-    <SafeAreaView
-      className="flex-1 bg-white"
-      style={{backgroundColor: colors.bg}}>
-      {/* <View className="flex-row justify-start">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="absolute top-4 left-4 z-10 bg-yellow-400 p-2 rounded-bl-2xl">
-          <Icon name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      </View> */}
-      <Header />
+    <SafeAreaView>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Header handleOpenBottomSheet={handleOpenBottomSheet} />
+        <Category />
+        {/* <Services /> */}
+
+        {/* <Deals /> */}
+        <Brands />
+      </ScrollView>
+      <BottomSheet
+        ref={bottomSheetRef}
+        snapPoints={['25%', '50%', '100%']}
+        initialSnapIndex={1}
+        enablePanDownToClose={true} 
+      >
+        <View className="flex flex-1 items-center justify-center" >
+          <Text>Hello from Bottom Sheet!</Text>
+        </View>
+      </BottomSheet>
     </SafeAreaView>
   );
 };

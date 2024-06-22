@@ -64,7 +64,9 @@ export const updateProfileImage = createAsyncThunk(
       await firestore().collection('users').doc(uid).update({
         photoURL: downloadUrl,
       });
-
+      await firestore().collection('profiledetails').doc(uid).update({
+        photoURL: downloadUrl,
+      });
       // Return the new image URL to update the user state
       return downloadUrl;
     } catch (error) {

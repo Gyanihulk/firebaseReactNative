@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   View,
@@ -15,8 +15,11 @@ import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import colors from '../theme/colors';
 import {Picker} from '@react-native-picker/picker';
-import {useDispatch} from 'react-redux';
-import {saveProfileDetails} from '../redux/slices/profileDetails';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  fetchProfileDetails,
+  saveProfileDetails,
+} from '../redux/slices/profileDetails';
 import {launchImageLibrary} from 'react-native-image-picker';
 
 const {width: screenWidth} = Dimensions.get('window');
@@ -40,17 +43,39 @@ const UserOnboarding = () => {
   const [profileImage, setProfileImage] = useState(null);
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const profileDetails = useSelector(state => state.profileDetails.data);
   // Function to handle form submission
+  console.log(profileDetails, 'from user onboardind');
+  useEffect(() => {
+    if (!profileDetails) {
+      dispatch(fetchProfileDetails());
+    } else {
+      setProfileImage(profileDetails.photoURL);
+      setLocation(profileDetails.location); // Set the location state
+      setTeachingExperience(profileDetails.teachingExperience);
+      setTeachingQualifications(profileDetails.teachingQualifications);
+      setSelectedSubjects(profileDetails.subjectsTaught || []); // Use empty array as fallback
+      setClassPreferences(profileDetails.classPreferences || []); // Use empty array as fallback
+
+      // Set states for student role if available
+      setSubjectsOfInterest(profileDetails.subjectsOfInterest || '');
+      setCurrentEducationLevel(profileDetails.currentEducationLevel || '');
+      setGoalsForTutoring(profileDetails.goalsForTutoring || '');
+      setPreferredLearningStyle(profileDetails.preferredLearningStyle || '');
+      setSelectedDays(profileDetails.availability?.days || []);
+    }
+  }, [dispatch, profileDetails]);
   const handleSubmit = () => {
     // Determine the role based on the index
     const role = index === 0 ? 'teacher' : 'student';
-
-    // Create the profile data object
+  
+    // Create the profile data object with common fields
     let profileData = {
       role, // Add the role to the profile data
       location,
+      photoURL: profileImage, // Include the profile image URL
     };
-
+  
     // Include additional fields based on the role
     if (role === 'teacher') {
       profileData = {
@@ -72,10 +97,20 @@ const UserOnboarding = () => {
         },
       };
     }
-
+  
     // Dispatch the saveProfileDetails action with the profile data
-    dispatch(saveProfileDetails(profileData));
-    dispatch(setIsAuthenticated(true));
+    dispatch(saveProfileDetails(profileData))
+      .then(() => {
+        // Set authentication state and fetch profile details only after saving is successful
+        dispatch(setIsAuthenticated(true));
+        dispatch(fetchProfileDetails());
+        // Navigate to the 'Home' screen
+        navigation.navigate('Home');
+      })
+      .catch((error) => {
+        console.error('Failed to save profile details:', error);
+        // Handle any errors here, such as displaying an error message to the user
+      });
   };
   const handleSelectImage = () => {
     const options = {
@@ -95,7 +130,6 @@ const UserOnboarding = () => {
 
         // Dispatch the action to update the profile image
         dispatch(updateProfileImage({imageUri: source.uri}));
-        
       }
     });
   };

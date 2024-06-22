@@ -15,7 +15,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import colors from '../theme/colors';
 import {useDispatch} from 'react-redux';
-import {registerUser} from '../redux/slices/user';
+import {registerUser, setIsAuthenticated, setUser} from '../redux/slices/user';
 import Toast from 'react-native-toast-message';
 import onGoogleButtonPress from '../lib/google';
 const {width: screenWidth} = Dimensions.get('window');
@@ -34,6 +34,8 @@ const SignUp = () => {
 
         // Dispatch the registerUser action with the email, password, and userData
         dispatch(registerUser({email, password, userData}));
+        dispatch(setIsAuthenticated(true));
+        navigation.navigate("UserOnboarding")
       } else {
         Toast.show({
           type: 'error',
@@ -117,6 +119,17 @@ const SignUp = () => {
                 onGoogleButtonPress()
                   .then(user => {
                     console.log('Signed in with Google!', user);
+                    const userForState = {
+                      displayName: user.displayName,
+                      email: user.email,
+                      emailVerified: user.emailVerified,
+                      isAnonymous: user.isAnonymous,
+                      phoneNumber: user.phoneNumber,
+                      photoURL: user.photoURL,
+                      uid: user.uid,
+                      // Any other properties you need that are serializable
+                    };
+                    dispatch(setUser(userForState));
                     // Navigate to the onboarding screen after successful sign-in
                     navigation.navigate('UserOnboarding');
                   })
