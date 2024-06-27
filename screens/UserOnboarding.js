@@ -25,6 +25,15 @@ import {launchImageLibrary} from 'react-native-image-picker';
 const {width: screenWidth} = Dimensions.get('window');
 import {Tab, TabView} from '@rneui/themed';
 import {setIsAuthenticated, updateProfileImage} from '../redux/slices/user';
+import {
+  days,
+  educationLevels,
+  experienceOptions,
+  learningStyles,
+  qualificationsOptions,
+  subjectsOptions,
+  tutoringGoals,
+} from '../data/Constants';
 const UserOnboarding = () => {
   const [subjectsOfInterest, setSubjectsOfInterest] = useState('');
   const [currentEducationLevel, setCurrentEducationLevel] = useState('');
@@ -35,6 +44,7 @@ const UserOnboarding = () => {
   const [teachingExperience, setTeachingExperience] = useState('');
   const [teachingQualifications, setTeachingQualifications] = useState('');
   const [location, setLocation] = useState('');
+  const [name, setName] = useState('');
   const [index, setIndex] = useState(0);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [classPreferences, setClassPreferences] = useState([]);
@@ -43,39 +53,46 @@ const UserOnboarding = () => {
   const [profileImage, setProfileImage] = useState(null);
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const profileDetails = useSelector(state => state.profileDetails.data);
+  const {
+    data: profileDetails,
+    status,
+    error,
+  } = useSelector(state => state.profileDetails);
   // Function to handle form submission
-  console.log(profileDetails, 'from user onboardind');
-  useEffect(() => {
-    if (!profileDetails) {
-      dispatch(fetchProfileDetails());
-    } else {
-      setProfileImage(profileDetails.photoURL);
-      setLocation(profileDetails.location); // Set the location state
-      setTeachingExperience(profileDetails.teachingExperience);
-      setTeachingQualifications(profileDetails.teachingQualifications);
-      setSelectedSubjects(profileDetails.subjectsTaught || []); // Use empty array as fallback
-      setClassPreferences(profileDetails.classPreferences || []); // Use empty array as fallback
 
-      // Set states for student role if available
+  useEffect(() => {
+    // Check if profileDetails is not null or undefined
+    if (profileDetails) {
+      console.log('Profile details available', profileDetails);
+      setName(profileDetails.name || '');
+      setProfileImage(profileDetails.photoURL || null);
+      setLocation(profileDetails.location || '');
+      setTeachingExperience(profileDetails.teachingExperience || '');
+      setTeachingQualifications(profileDetails.teachingQualifications || '');
+      setSelectedSubjects(profileDetails.subjectsTaught || []);
+      setClassPreferences(profileDetails.classPreferences || []);
       setSubjectsOfInterest(profileDetails.subjectsOfInterest || '');
       setCurrentEducationLevel(profileDetails.currentEducationLevel || '');
       setGoalsForTutoring(profileDetails.goalsForTutoring || '');
       setPreferredLearningStyle(profileDetails.preferredLearningStyle || '');
       setSelectedDays(profileDetails.availability?.days || []);
+    } else {
+      console.log('Fetching profile info');
+      dispatch(fetchProfileDetails());
     }
   }, [dispatch, profileDetails]);
   const handleSubmit = () => {
     // Determine the role based on the index
     const role = index === 0 ? 'teacher' : 'student';
-  
+
     // Create the profile data object with common fields
     let profileData = {
+      name: name,
       role, // Add the role to the profile data
       location,
       photoURL: profileImage, // Include the profile image URL
     };
-  
+
     // Include additional fields based on the role
     if (role === 'teacher') {
       profileData = {
@@ -97,7 +114,7 @@ const UserOnboarding = () => {
         },
       };
     }
-  
+    console.log(profileData, 'updating this');
     // Dispatch the saveProfileDetails action with the profile data
     dispatch(saveProfileDetails(profileData))
       .then(() => {
@@ -107,7 +124,7 @@ const UserOnboarding = () => {
         // Navigate to the 'Home' screen
         navigation.navigate('Home');
       })
-      .catch((error) => {
+      .catch(error => {
         console.error('Failed to save profile details:', error);
         // Handle any errors here, such as displaying an error message to the user
       });
@@ -125,7 +142,7 @@ const UserOnboarding = () => {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else {
         const source = {uri: response.assets[0].uri};
-        console.log(source.uri);
+
         setProfileImage(source.uri);
 
         // Dispatch the action to update the profile image
@@ -133,42 +150,6 @@ const UserOnboarding = () => {
       }
     });
   };
-  const educationLevels = [
-    {label: '1st - 5th Standard', value: '1-5'},
-    {label: '6th - 8th Standard', value: '6-8'},
-    {label: '9th - 10th Standard', value: '9-10'},
-    {label: '11th - 12th Standard', value: '11-12'},
-    {label: 'Graduation', value: 'graduation'},
-    {label: 'Post Graduation', value: 'post-graduation'},
-    // Add more options as needed
-  ];
-
-  const tutoringGoals = [
-    {label: 'Improve Grades', value: 'improve-grades'},
-    {label: 'Prepare for Exams', value: 'prepare-exams'},
-    {label: 'Understand Subject Matter', value: 'understand-subject'},
-    {label: 'Homework Assistance', value: 'homework-assistance'},
-    {label: 'Competitive Exam Preparation', value: 'competitive-exam'},
-    // Add more options as needed
-  ];
-  const learningStyles = [
-    {label: 'Visual (Spatial)', value: 'visual'},
-    {label: 'Auditory (Aural)', value: 'auditory'},
-    {label: 'Kinesthetic (Physical)', value: 'kinesthetic'},
-    {label: 'Verbal (Linguistic)', value: 'verbal'},
-    {label: 'Logical (Mathematical)', value: 'logical'},
-    // Add more options as needed
-  ];
-
-  const days = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
 
   const toggleDay = day => {
     setSelectedDays(prevDays =>
@@ -177,56 +158,6 @@ const UserOnboarding = () => {
         : [...prevDays, day],
     );
   };
-  const experienceOptions = [
-    {label: 'Less than 1 year', value: 'less_than_1'},
-    {label: '1-3 years', value: '1-3_years'},
-    {label: '3-5 years', value: '3-5_years'},
-    {label: '5-10 years', value: '5-10_years'},
-    {label: 'More than 10 years', value: 'more_than_10'},
-  ];
-  const qualificationsOptions = [
-    {label: 'B.Ed (Bachelor of Education)', value: 'bed'},
-    {label: 'M.Ed (Master of Education)', value: 'med'},
-    {label: 'Ph.D. in Education', value: 'phd_education'},
-    {
-      label: 'Subject-specific degree (e.g., BSc, BA)',
-      value: 'subject_specific_degree',
-    },
-    {label: 'Teaching certification', value: 'teaching_certification'},
-    {label: 'B.Tech (Bachelor of Technology)', value: 'btech'},
-    {label: 'M.Tech (Master of Technology)', value: 'mtech'},
-    {label: 'MSc (Master of Science)', value: 'msc'},
-    {label: 'MA (Master of Arts)', value: 'ma'},
-    {label: 'Diploma in Education', value: 'diploma_education'},
-    // Add other qualifications as needed
-  ];
-
-  const subjectsOptions = [
-    {label: 'Mathematics', value: 'mathematics'},
-    {label: 'Physics', value: 'physics'},
-    {label: 'Chemistry', value: 'chemistry'},
-    {label: 'Biology', value: 'biology'},
-    {label: 'Science', value: 'general_science'},
-    {label: 'Social Studies', value: 'social_studies'},
-    {label: 'History', value: 'history'},
-    {label: 'Geography', value: 'geography'},
-    {label: 'Political Science', value: 'political_science'},
-    {label: 'Economics', value: 'economics'},
-    {label: 'Languages (e.g., English, Hindi, etc.)', value: 'languages'},
-    {label: 'Computer Science', value: 'computer_science'},
-    {label: 'Information Technology', value: 'information_technology'},
-    {label: 'Mechanical Engineering', value: 'mechanical_engineering'},
-    {label: 'Electrical Engineering', value: 'electrical_engineering'},
-    {label: 'Civil Engineering', value: 'civil_engineering'},
-    {
-      label: 'Electronics and Communication',
-      value: 'electronics_communication',
-    },
-    {label: 'Physical Education', value: 'physical_education'},
-    {label: 'Arts', value: 'arts'},
-    {label: 'Music', value: 'music'},
-    // Add other subjects as needed
-  ];
 
   const handleSubjectSelection = value => {
     setSelectedSubjects(prevSubjects =>
@@ -304,6 +235,14 @@ const UserOnboarding = () => {
                       Tap to Change Profile Picture
                     </Text>
                   </View>
+                  <Text className="text-gray-700 ml-4">Name</Text>
+                  <TextInput
+                    className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-5"
+                    placeholder="Enter your Name"
+                    value={name}
+                    onChangeText={setName}
+                    placeholderTextColor="#4B5563"
+                  />
                   <Text className="text-gray-700 ml-4">
                     Teaching Experience
                   </Text>
@@ -427,6 +366,14 @@ const UserOnboarding = () => {
                       Tap to Change Profile Picture
                     </Text>
                   </View>
+                  <Text className="text-gray-700 ml-4">Name</Text>
+                  <TextInput
+                    className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-5"
+                    placeholder="Enter your Name"
+                    value={name}
+                    onChangeText={setName}
+                    placeholderTextColor="#4B5563"
+                  />
                   <Text className="text-gray-700 ml-4 pt-3 ">
                     Current Education Level
                   </Text>

@@ -17,7 +17,7 @@ import colors from '../theme/colors';
 import onGoogleButtonPress from '../lib/google';
 import {setIsAuthenticated, setUser} from '../redux/slices/user';
 import {useDispatch} from 'react-redux';
-import { fetchProfileDetails } from '../redux/slices/profileDetails';
+import {fetchProfileDetails} from '../redux/slices/profileDetails';
 const {width: screenWidth} = Dimensions.get('window');
 const SignIn = () => {
   const navigation = useNavigation();

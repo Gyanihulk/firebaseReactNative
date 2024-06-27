@@ -20,10 +20,7 @@ const ProductScreen = () => {
         product.map(item => (
           <View style={styles.productSection}>
             <View style={styles.productImgSection}>
-              <Image
-                style={styles.productImg}
-                source={AmazonPay}
-              />
+              <Image style={styles.productImg} source={AmazonPay} />
             </View>
             <View style={styles.productDetailSection}>
               <Text style={styles.sponsored}>Sponsored</Text>

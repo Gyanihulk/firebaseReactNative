@@ -6,17 +6,20 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import colors from '../theme/colors';
 import {useDispatch, useSelector} from 'react-redux';
-import {fetchProfileDetails} from '../redux/slices/profileDetails';
+
+import {fetchProfiles, resetProfiles} from '../redux/slices/profiles';
+import {logoutUser, setIsAuthenticated} from '../redux/slices/user';
 
 const AVATAR_URL =
   'https://images.unsplash.com/photo-1496345875659-11f7dd282d1d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80';
 
 const Header = ({handleOpenBottomSheet}) => {
+  const [searchTerm, setSearchTerm] = useState('');
   const dispatch = useDispatch();
   const user = useSelector(state => state.user.user);
   const isAuthenticated = useSelector(state => state.user.isAutheticated);
@@ -27,12 +30,15 @@ const Header = ({handleOpenBottomSheet}) => {
     error,
   } = useSelector(state => state.profileDetails);
 
-  // useEffect(() => {
-  //   // Dispatch the fetchProfileDetails thunk to load the profile details
-  //   dispatch(fetchProfileDetails());
-  // }, []);
-
-  console.log(profileDetails, 'from header');
+  const handleSearch = text => {
+    setSearchTerm(text);
+    dispatch(resetProfiles()); // Clear the current search results
+    dispatch(fetchProfiles({searchTerm: text, lastDoc: null})); // Fetch new results
+  };
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    dispatch(setIsAuthenticated(false));
+  };
   return (
     <View>
       <LinearGradient
@@ -48,13 +54,15 @@ const Header = ({handleOpenBottomSheet}) => {
           />
           <View style={styles.headerTextContainer}>
             <Text style={styles.greeting} numberOfLines={1}>
-              Hi, {user.displayName} 👋
+              Hi, {profileDetails?.name} 👋
             </Text>
             <Text style={styles.discover} numberOfLines={1}>
               {profileDetails?.location}
             </Text>
           </View>
-          <TouchableOpacity style={styles.notificationIcon}>
+          <TouchableOpacity
+            style={styles.notificationIcon}
+            onPress={handleLogout}>
             <Icon name="notifications" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
@@ -66,6 +74,8 @@ const Header = ({handleOpenBottomSheet}) => {
               placeholder="Search Gyanigurus"
               placeholderTextColor="#848484"
               style={styles.textInput}
+              value={searchTerm}
+              onChangeText={handleSearch}
             />
           </View>
 

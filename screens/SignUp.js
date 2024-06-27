@@ -18,6 +18,7 @@ import {useDispatch} from 'react-redux';
 import {registerUser, setIsAuthenticated, setUser} from '../redux/slices/user';
 import Toast from 'react-native-toast-message';
 import onGoogleButtonPress from '../lib/google';
+import {fetchProfileDetails} from '../redux/slices/profileDetails';
 const {width: screenWidth} = Dimensions.get('window');
 const SignUp = () => {
   const [name, setName] = useState('');
@@ -29,13 +30,13 @@ const SignUp = () => {
     try {
       if (name !== '' && email !== '' && password !== '') {
         const userData = {
-          name,
+          displayName: name,
         };
 
         // Dispatch the registerUser action with the email, password, and userData
         dispatch(registerUser({email, password, userData}));
-        dispatch(setIsAuthenticated(true));
-        navigation.navigate("UserOnboarding")
+        dispatch(fetchProfileDetails());
+        navigation.navigate('UserOnboarding');
       } else {
         Toast.show({
           type: 'error',

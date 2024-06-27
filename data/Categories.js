@@ -1,4 +1,3 @@
-
 export const Categories = [
   {
     id: 1,
@@ -40,7 +39,7 @@ export const Categories = [
     icon: 'attach-money',
     title: 'Finance & Investment',
   },
- 
+
   {
     id: 9,
     icon: 'work',
@@ -51,5 +50,4 @@ export const Categories = [
     icon: 'translate',
     title: 'Language Learning',
   },
-
 ];

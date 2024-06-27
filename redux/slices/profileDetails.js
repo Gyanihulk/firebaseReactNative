@@ -3,6 +3,7 @@ import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
+import {logoutUser} from './user';
 
 // Async thunk for saving profile details
 export const saveProfileDetails = createAsyncThunk(
@@ -13,7 +14,7 @@ export const saveProfileDetails = createAsyncThunk(
 
       // Create a reference to the user's document in the profiledetails collection
       const profileRef = firestore().collection('profiledetails').doc(userId);
-      console.log('profileCreatedSuccefully');
+
       Toast.show({
         type: 'success',
         position: 'bottom',
@@ -25,6 +26,7 @@ export const saveProfileDetails = createAsyncThunk(
       // Return the saved profile data
       return profileData;
     } catch (error) {
+      console.error(error);
       return rejectWithValue(error.message);
     }
   },
@@ -34,23 +36,23 @@ export const fetchProfileDetails = createAsyncThunk(
   async (_, {rejectWithValue}) => {
     try {
       const userId = auth().currentUser.uid;
-
-      // Get a reference to the user's document in the profiledetails collection
       const profileRef = firestore().collection('profiledetails').doc(userId);
-
-      // Get the profile data from Firestore
       const profileSnapshot = await profileRef.get();
-     
-      // Check if the profile data exists and has a photoURL field
+
       if (profileSnapshot.exists) {
-        // Return the photoURL
-        console.log(profileSnapshot.data())
         return profileSnapshot.data();
       } else {
-        // Throw an error if no photoURL is found
-        throw new Error('No profile image found.');
+        // Return an object with empty values instead of throwing an error
+        return {
+          photoURL: '',
+          location: '',
+          teachingExperience: '',
+          teachingQualifications: '',
+          subjectsTaught: [],
+        };
       }
     } catch (error) {
+      console.error(error);
       return rejectWithValue(error.message);
     }
   },
@@ -66,9 +68,9 @@ const profileDetailsSlice = createSlice({
   reducers: {
     // Optional: add reducers for other actions here
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
-      .addCase(saveProfileDetails.pending, (state) => {
+      .addCase(saveProfileDetails.pending, state => {
         state.status = 'loading';
       })
       .addCase(saveProfileDetails.fulfilled, (state, action) => {
@@ -79,7 +81,7 @@ const profileDetailsSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload;
       })
-      .addCase(fetchProfileDetails.pending, (state) => {
+      .addCase(fetchProfileDetails.pending, state => {
         state.status = 'loading';
       })
       .addCase(fetchProfileDetails.fulfilled, (state, action) => {
@@ -89,6 +91,13 @@ const profileDetailsSlice = createSlice({
       .addCase(fetchProfileDetails.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
+      })
+      .addCase(logoutUser.fulfilled, state => {
+        // Reset the state to the initial state upon logout
+        state.data = null;
+        state.profileImage = null;
+        state.status = 'idle';
+        state.error = null;
       });
   },
 });

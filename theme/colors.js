@@ -4,7 +4,7 @@ const colors = {
   secondary: '#F76A8C', // Gentle Pink
   header: '#7B70F9', // Soft Purple (same as background)
   text: 'black',
-  yellow:"#f6e05e"
+  yellow: '#f6e05e',
   // ... add more colors as needed
 };
 export default colors;

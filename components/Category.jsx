@@ -24,18 +24,19 @@ const Category = () => {
     <ScrollView
       showsHorizontalScrollIndicator={false}
       horizontal
+      style={{
+        backgroundColor: colors.background,
+      }}
       className="p-10">
       {category?.length &&
         category.map(item => (
-          
-            <TouchableOpacity
-              onPress={() => navigation.navigate('ProductScreen')}
-              key={item.id}
-              style={styles.category}>
-              <Icon name={item.icon} size={68} color={colors.text} />
-              <Text style={styles.title}>{item.title}</Text>
-            </TouchableOpacity>
-          
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ProductScreen')}
+            key={item.id}
+            style={styles.category}>
+            <Icon name={item.icon} size={68} color={colors.yellow} />
+            <Text style={styles.title}>{item.title}</Text>
+          </TouchableOpacity>
         ))}
     </ScrollView>
   );
@@ -44,7 +45,7 @@ const Category = () => {
 const styles = StyleSheet.create({
   title: {
     fontSize: 10,
-    color: '#2c4341',
+    color: colors.yellow,
   },
   category: {
     paddingHorizontal: 8,

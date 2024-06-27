@@ -10,7 +10,6 @@ const initialState = {
 };
 import storage from '@react-native-firebase/storage';
 
-
 export const registerUser = createAsyncThunk(
   'user/registerUser',
   async ({email, password, userData}, {rejectWithValue}) => {
@@ -35,11 +34,19 @@ export const registerUser = createAsyncThunk(
         position: 'bottom',
         text1: 'Account created.',
       });
-      return {
+      const userInfo = {
         uid: user.uid,
         email: user.email,
         ...userData,
       };
+      await firestore()
+        .collection('profiledetails')
+        .doc(user.uid)
+        .set({
+          uid: user.uid,
+          name: userData.displayName || '', // Use the displayName or an empty string as fallback
+        });
+      return userInfo;
     } catch (error) {
       console.error(error);
       return rejectWithValue(error.message);
@@ -48,7 +55,7 @@ export const registerUser = createAsyncThunk(
 );
 export const updateProfileImage = createAsyncThunk(
   'user/updateProfileImage',
-  async ({ imageUri}, {rejectWithValue}) => {
+  async ({imageUri}, {rejectWithValue}) => {
     try {
       const uid = auth().currentUser.uid;
       // Create a reference to the Firebase Storage location
@@ -75,6 +82,22 @@ export const updateProfileImage = createAsyncThunk(
     }
   },
 );
+
+export const logoutUser = createAsyncThunk(
+  'user/logoutUser',
+  async (_, {rejectWithValue}) => {
+    try {
+      // Sign out the user using Firebase Auth
+      await auth().signOut();
+
+      // No need to return any payload since we are logging out
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
 export const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -115,12 +138,22 @@ export const userSlice = createSlice({
         .addCase(updateProfileImage.rejected, state => {
           state.userLoading = false;
           // You can add additional error handling here if needed
+        })
+        .addCase(logoutUser.fulfilled, state => {
+          // Reset the state to the initial state upon logout
+          state.isAutheticated = false;
+          state.user = null;
+          state.userLoading = false;
+        })
+        .addCase(logoutUser.rejected, (state, action) => {
+          // You can handle logout errors here if needed
+          console.error('Logout failed:', action.payload);
         });
     },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const {setUser, setUserLoading,setIsAuthenticated} = userSlice.actions;
+export const {setUser, setUserLoading, setIsAuthenticated} = userSlice.actions;
 
 export default userSlice.reducer;
